@@ -70,6 +70,7 @@ export class SRP {
         this.makeA();
         break;
       case Mode.Server:
+        this.makeB();
         break;
     }
 
@@ -128,5 +129,10 @@ export class SRP {
 
     this.ephemeralPublicA = exp(this.group.g, this.ephemeralPrivate, this.group.n);
     return this.ephemeralPublicA;
+  }
+
+  private makeB(): bigint {
+    // TODO
+    return bigZero;
   }
 }
