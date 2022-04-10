@@ -91,7 +91,7 @@ export class SRP {
     total.set(n, 0);
     total.set(g, n.length);
 
-    this.k = BigInt(await sumSHA256(total));
+    this.k = BigInt(uint8ArrayToHex(await sumSHA256(total)));
 
     return this.k
   }

@@ -17,19 +17,17 @@ export function stringToUint8Array(input: string): Uint8Array {
   return Uint8Array.from(input, c => c.charCodeAt(0));
 }
 
-// sumSHA512 just takes the provided string and returns the sum of the SHA512 hash of that string.
 export async function sumSHA512(input: Uint8Array): Promise<Uint8Array> {
-  const outerResult = await crypto.subtle.digest('SHA-512', input.buffer)
-    .then(buf => Array.prototype.map.call(new Uint8Array(buf), (x: number) => (('00' + x.toString(16)).slice(-2))).join(''));
-
-  return hexToUint8Array(outerResult.toString());
+  return sumHash('SHA-512', input);
 }
 
-export async function sumSHA256(input: Uint8Array): Promise<string> {
-  const result = await crypto.subtle.digest('SHA-256', input.buffer)
-    .then(buf => {
-      return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString()).slice(-2))).join('');
-    });
+export async function sumSHA256(input: Uint8Array): Promise<Uint8Array> {
+  return sumHash('SHA-256', input);
+}
 
-  return result.toString();
+async function sumHash(algorithm: AlgorithmIdentifier, input: Uint8Array): Promise<Uint8Array> {
+  const result = await crypto.subtle.digest(algorithm, input.buffer)
+    .then(buf => Array.prototype.map.call(new Uint8Array(buf), (x: number) => (('00' + x.toString(16)).slice(-2))).join(''));
+
+  return hexToUint8Array(result.toString());
 }
