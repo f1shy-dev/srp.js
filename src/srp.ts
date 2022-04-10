@@ -1,7 +1,7 @@
 import { hexToUint8Array, uint8ArrayToHex } from './buffer';
 import { Group } from 'group';
 import { sumSHA256 } from 'kdf';
-import { exp } from 'math';
+import { bigIntFromUint8Array, exp } from 'math';
 
 export const MinGroupSize = 2048;
 export const MinExponentSize = 32;
@@ -91,7 +91,7 @@ export class SRP {
     total.set(n, 0);
     total.set(g, n.length);
 
-    this.k = BigInt(uint8ArrayToHex(await sumSHA256(total)));
+    this.k = bigIntFromUint8Array(await sumSHA256(total));
 
     return this.k
   }
@@ -108,7 +108,7 @@ export class SRP {
     const eSize = Math.max(this.group.ExponentSize, MinExponentSize);
     let bytes = new Uint8Array(eSize);
     bytes = crypto.getRandomValues(bytes);
-    this.ephemeralPrivate = BigInt(uint8ArrayToHex(bytes));
+    this.ephemeralPrivate = bigIntFromUint8Array(bytes);
     return this.ephemeralPrivate;
   }
 

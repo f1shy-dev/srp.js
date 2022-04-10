@@ -1,4 +1,6 @@
 // Modular exponentiation for x ^ y mod |m|
+import { uint8ArrayToHex } from './buffer';
+
 export function exp(x: bigint, y: bigint, m: bigint): bigint {
   const one = BigInt(1);
   const two = BigInt(2);
@@ -17,4 +19,8 @@ export function exp(x: bigint, y: bigint, m: bigint): bigint {
   }
 
   return result;
+}
+
+export function bigIntFromUint8Array(input: Uint8Array): bigint {
+  return BigInt(`0x${ uint8ArrayToHex(input) }`);
 }
