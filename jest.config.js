@@ -5,4 +5,7 @@ module.exports = {
   modulePaths: [
     '<rootDir>/src',
   ],
+  setupFiles: [
+    '<rootDir>/jest.setup.js',
+  ],
 };

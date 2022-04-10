@@ -11,10 +11,8 @@ export async function KDFSHA512(salt: string, username: string, password: string
 
 // sumSHA512 just takes the provided string and returns the sum of the SHA512 hash of that string.
 export async function sumSHA512(input: string): Promise<string> {
-  const outerResult = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(input))
-    .then(buf => {
-      return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString()).slice(-2))).join('');
-    });
+  const outerResult = await crypto.subtle.digest('SHA-512', Uint8Array.from(decodeURI(encodeURIComponent(input)), c => c.charCodeAt(0)))
+    .then(buf => Array.prototype.map.call(new Uint8Array(buf), (x: number) => (('00' + x.toString(16)).slice(-2))).join(''));
 
   return outerResult.toString();
 }
