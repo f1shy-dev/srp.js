@@ -1,3 +1,4 @@
+import { BigIntFromUint8Array } from 'math';
 import { hexToUint8Array, uint8ArrayToHex } from './buffer';
 
 // KDFSHA512 is a key-derivation-function using SHA512 as the inner and outer hash.
@@ -10,7 +11,7 @@ export async function KDFSHA512(salt: Uint8Array, username: string, password: st
   outerInput.set(innerResult, salt.length);
   const outerResult = await sumSHA512(outerInput);
 
-  return BigInt(`0x${ uint8ArrayToHex(outerResult) }`);
+  return BigIntFromUint8Array(outerResult);
 }
 
 export function stringToUint8Array(input: string): Uint8Array {
