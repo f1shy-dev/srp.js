@@ -1,4 +1,4 @@
-import { BigIntFromUint8Array } from 'math';
+import { BigIntFromUint8Array } from './math';
 import { hexToUint8Array, uint8ArrayToHex } from './buffer';
 
 // KDFSHA512 is a key-derivation-function using SHA512 as the inner and outer hash.

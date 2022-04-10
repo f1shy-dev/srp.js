@@ -1,6 +1,6 @@
-import { Group } from 'group';
-import { stringToUint8Array, sumSHA256 } from 'kdf';
-import { BigIntFromUint8Array, ConstantTimeCompare, exp, gcd, mod, Uint8ArrayFromBigInt, XORUint8Array } from 'math';
+import { Group } from './group';
+import { stringToUint8Array, sumSHA256 } from './kdf';
+import { BigIntFromUint8Array, ConstantTimeCompare, exp, gcd, mod, Uint8ArrayFromBigInt, XORUint8Array } from './math';
 
 export const MinGroupSize = 2048;
 export const MinExponentSize = 32;
@@ -434,10 +434,6 @@ export class SRP {
 
     const hexPublicA = this.ephemeralPublicA.toString(16).toLowerCase();
     const hexPublicB = this.ephemeralPublicB.toString(16).toLowerCase();
-    if (hexPublicA.startsWith('0') || hexPublicB.startsWith('0')) {
-      console.warn('maybe this?');
-    }
-
     const h = await sumSHA256(stringToUint8Array(hexPublicA + hexPublicB));
     this.u = BigIntFromUint8Array(h);
     if (this.u === bigZero) {
