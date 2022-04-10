@@ -1,4 +1,4 @@
-import { hexToUint8Array, uint8ArrayToHex } from 'buffer';
+import { hexToUint8Array, uint8ArrayToHex } from './buffer';
 import { Group } from 'group';
 import { sumSHA256 } from 'kdf';
 import { exp } from 'math';

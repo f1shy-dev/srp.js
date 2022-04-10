@@ -1,6 +1,6 @@
-// KDFSHA512 is a key-derivation-function using SHA512 as the inner and outer hash.
 import { hexToUint8Array, uint8ArrayToHex } from './buffer';
 
+// KDFSHA512 is a key-derivation-function using SHA512 as the inner and outer hash.
 export async function KDFSHA512(salt: Uint8Array, username: string, password: string): Promise<bigint> {
   const innerInput = stringToUint8Array(`${ username }:${ password }`);
   const innerResult = await sumSHA512(innerInput);
