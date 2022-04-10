@@ -1,0 +1,13 @@
+{
+  "name": "srp.js",
+  "version": "0.0.1",
+  "description": "Secure Remote Password client for the web.",
+  "main": "index.ts",
+  "repository": "git@github.com:elliotcourant/srp.js.git",
+  "author": "Elliot Courant <me@elliotcourant.dev>",
+  "license": "Mozilla Public License 2.0",
+  "private": false,
+  "devDependencies": {
+    "typescript": "4.6.2"
+  }
+}
