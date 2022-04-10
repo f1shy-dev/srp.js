@@ -1,10 +1,10 @@
 export class Group {
-  public readonly g: BigInt;
-  public readonly n: BigInt;
+  public readonly g: bigint;
+  public readonly n: bigint;
   public readonly Label: string;
   public readonly ExponentSize: number; // RFC 3526 §8
 
-  constructor(g: BigInt, n: BigInt, label: string, exponentSize: number) {
+  constructor(g: bigint, n: bigint, label: string, exponentSize: number) {
     this.g = g;
     this.n = n;
     this.Label = label;

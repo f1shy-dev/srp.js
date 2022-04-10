@@ -19,11 +19,11 @@ export async function sumSHA512(input: string): Promise<string> {
   return outerResult.toString();
 }
 
-export async function sumSHA256(input: Uint8Array): Promise<Uint8Array> {
-  const buffer = await crypto.subtle.digest('SHA-256', input)
+export async function sumSHA256(input: Uint8Array): Promise<string> {
+  const result = await crypto.subtle.digest('SHA-256', input.buffer)
     .then(buf => {
       return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString()).slice(-2))).join('');
     });
 
-  return new Uint8Array(buffer, 0, buffer.byteLength);
+  return result.toString();
 }
