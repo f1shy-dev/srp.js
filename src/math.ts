@@ -4,30 +4,30 @@ import { hexToUint8Array, uint8ArrayToHex } from './buffer';
 export function exp(base: bigint, exponent: bigint, modulus: bigint): bigint {
   if (modulus === 1n) return 0n;
   let result = 1n;
-  base = base % modulus
+  base = mod(base, modulus)
   while (exponent > 0) {
-    if (exponent % 2n === 1n)
+    if (mod(exponent, 2n) === 1n)
       result = (result * base) % modulus;
     exponent = exponent >> 1n;
-    base = (base * base) % modulus;
+    base = mod((base * base), modulus);
   }
 
   return result;
 }
 
 export function exp2(a: bigint, b: bigint, m: bigint): bigint {
-  a = a % m
+  a = mod(a, m)
   let result = 1n;
   while (b > 0) {
     const leastSignificantBit = b % 2n;
     b /= 2n;
     if (leastSignificantBit === 1n) {
       result *= a;
-      result %= m;
+      result = mod(result, m)
     }
 
     a *= a;
-    a %= m;
+    a = mod(a, m)
   }
 
   return result;
@@ -49,11 +49,11 @@ export function gcd(a: bigint, b: bigint): bigint {
   }
 
   while (true) {
-    a %= b;
+    a = mod(a, b)
     if (a === 0n) {
       return b;
     }
-    b %= a;
+    b = mod(b, a)
     if (b === 0n) {
       return a;
     }

@@ -140,7 +140,7 @@ export class SRP {
       return false
     }
 
-    let result = AorB % this.group.n;
+    let result = mod(AorB, this.group.n);
     if (result === bigZero) {
       // If the result is not negative or positive then return false.
       return false
@@ -396,8 +396,8 @@ export class SRP {
     }
 
     const term2 = exp(this.group.g, this.ephemeralPrivate, this.group.n);
-    const term1 = (this.k * this.v) % this.group.n;
-    this.ephemeralPublicB = (term1 + term2) % this.group.n;
+    const term1 = mod((this.k * this.v), this.group.n);
+    this.ephemeralPublicB = mod((term1 + term2), this.group.n);
 
     return this.ephemeralPublicB;
   }
