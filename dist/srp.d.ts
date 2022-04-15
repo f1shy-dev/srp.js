@@ -57,6 +57,7 @@ declare const _default: {
     G6144: Group;
     G8192: Group;
     KDFSHA512: typeof KDFSHA512;
+    Mode: typeof Mode;
 };
 
 export { _default as default };
