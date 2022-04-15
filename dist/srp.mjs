@@ -1,19 +1,3 @@
-function hexToUint8Array(hexString) {
-  if (hexString === void 0) {
-    throw RangeError("hexString cannot undefined");
-  }
-  const hexMatch = hexString.match(/^(0x)?([\da-fA-F]+)$/);
-  if (hexMatch == null) {
-    throw RangeError("hexString must be a hexadecimal string, e.g. '0x4dc43467fe91' or '4dc43467fe91'");
-  }
-  let hex = hexMatch[2];
-  hex = hex.length % 2 === 0 ? hex : "0" + hex;
-  return Uint8Array.from(hex.match(/[\da-fA-F]{2}/g).map((h) => parseInt(h, 16)));
-}
-function uint8ArrayToHex(array) {
-  return Array.from(array, (byte) => ("0" + (byte & 255).toString(16)).slice(-2)).join("");
-}
-
 function exp(base, exponent, modulus) {
   if (modulus === 1n)
     return 0n;
@@ -49,7 +33,7 @@ function gcd(a, b) {
     }
   }
 }
-function XORUint8Array(a, b) {
+function xorUint8Array(a, b) {
   let n = b.length < a.length ? b.length : a.length;
   let dst = new Uint8Array(n);
   for (let i = 0; i < n; i++) {
@@ -57,7 +41,7 @@ function XORUint8Array(a, b) {
   }
   return dst;
 }
-function ConstantTimeCompare(a, b) {
+function constantTimeCompare(a, b) {
   if (a.length != b.length) {
     return false;
   }
@@ -71,11 +55,29 @@ function ConstantTimeCompare(a, b) {
 function mod(a, b) {
   return (a % b + b) % b;
 }
-function BigIntFromUint8Array(input) {
+function bigIntFromUint8Array(input) {
   return BigInt(`0x${uint8ArrayToHex(input)}`);
 }
-function Uint8ArrayFromBigInt(input) {
+function uint8ArrayFromBigInt(input) {
   return hexToUint8Array(input.toString(16));
+}
+function hexToUint8Array(hexString) {
+  if (hexString === void 0) {
+    throw RangeError("hexString cannot undefined");
+  }
+  const hexMatch = hexString.match(/^(0x)?([\da-fA-F]+)$/);
+  if (hexMatch == null) {
+    throw RangeError("hexString must be a hexadecimal string, e.g. '0x4dc43467fe91' or '4dc43467fe91'");
+  }
+  let hex = hexMatch[2];
+  hex = hex.length % 2 === 0 ? hex : "0" + hex;
+  return Uint8Array.from(hex.match(/[\da-fA-F]{2}/g).map((h) => parseInt(h, 16)));
+}
+function uint8ArrayToHex(array) {
+  return Array.from(array, (byte) => ("0" + (byte & 255).toString(16)).slice(-2)).join("");
+}
+function stringToUint8Array(input) {
+  return Uint8Array.from(input, (c) => c.charCodeAt(0));
 }
 
 async function KDFSHA512(salt, username, password) {
@@ -85,10 +87,7 @@ async function KDFSHA512(salt, username, password) {
   outerInput.set(salt, 0);
   outerInput.set(innerResult, salt.length);
   const outerResult = await sumSHA512(outerInput);
-  return BigIntFromUint8Array(outerResult);
-}
-function stringToUint8Array(input) {
-  return Uint8Array.from(input, (c) => c.charCodeAt(0));
+  return bigIntFromUint8Array(outerResult);
 }
 async function sumSHA512(input) {
   return sumHash("SHA-512", input);
@@ -247,17 +246,17 @@ class SRP {
     if (this.key === null) {
       throw new Error("don't try to prove anything before you have the key");
     }
-    const nHash = sumSHA256(Uint8ArrayFromBigInt(this.group.n));
-    const gHash = sumSHA256(Uint8ArrayFromBigInt(this.group.g));
-    const groupXOR = XORUint8Array(await nHash, await gHash);
+    const nHash = sumSHA256(uint8ArrayFromBigInt(this.group.n));
+    const gHash = sumSHA256(uint8ArrayFromBigInt(this.group.g));
+    const groupXOR = xorUint8Array(await nHash, await gHash);
     const SHA256Size = 32;
     if (groupXOR.length !== SHA256Size) {
       throw new Error(`XOR had ${groupXOR.length} bytes instead of 32`);
     }
     const groupHash = sumSHA256(groupXOR);
     const usernameHash = sumSHA256(stringToUint8Array(username));
-    const A = Uint8ArrayFromBigInt(this.ephemeralPublicA);
-    const B = Uint8ArrayFromBigInt(this.ephemeralPublicB);
+    const A = uint8ArrayFromBigInt(this.ephemeralPublicA);
+    const B = uint8ArrayFromBigInt(this.ephemeralPublicB);
     let input = new Uint8Array(SHA256Size * 2 + salt.length + A.length + B.length + this.key.length);
     input.set(await groupHash, 0);
     input.set(await usernameHash, SHA256Size);
@@ -278,7 +277,7 @@ class SRP {
     if (this.ephemeralPublicA === null || this.m === null || this.key === null) {
       throw new Error("not enough pieces in place to construct client proof");
     }
-    const A = Uint8ArrayFromBigInt(this.ephemeralPublicA);
+    const A = uint8ArrayFromBigInt(this.ephemeralPublicA);
     const input = new Uint8Array(A.length + this.m.length + this.key.length);
     input.set(A, 0);
     input.set(this.m, A.length);
@@ -288,7 +287,7 @@ class SRP {
   }
   async GoodServerProof(salt, username, proof) {
     const myM = await this.M(salt, username);
-    this.isServerProved = ConstantTimeCompare(myM, proof);
+    this.isServerProved = constantTimeCompare(myM, proof);
     return this.isServerProved;
   }
   async GoodClientProof(proof) {
@@ -298,25 +297,25 @@ class SRP {
     } catch {
       return false;
     }
-    return ConstantTimeCompare(myClientProof, proof);
+    return constantTimeCompare(myClientProof, proof);
   }
   async makeLittleK() {
     if (!this.group) {
       throw new Error("group not set");
     }
-    const n = Uint8ArrayFromBigInt(this.group.n);
-    const g = Uint8ArrayFromBigInt(this.group.g);
+    const n = uint8ArrayFromBigInt(this.group.n);
+    const g = uint8ArrayFromBigInt(this.group.g);
     const total = new Uint8Array(n.length + g.length);
     total.set(n, 0);
     total.set(g, n.length);
-    this.k = BigIntFromUint8Array(await sumSHA256(total));
+    this.k = bigIntFromUint8Array(await sumSHA256(total));
     return this.k;
   }
   generateMySecret() {
     const eSize = Math.max(this.group.ExponentSize, MinExponentSize);
     let bytes = new Uint8Array(eSize);
     bytes = crypto.getRandomValues(bytes);
-    this.ephemeralPrivate = BigIntFromUint8Array(bytes);
+    this.ephemeralPrivate = bigIntFromUint8Array(bytes);
     return this.ephemeralPrivate;
   }
   makeA() {
@@ -384,7 +383,7 @@ class SRP {
     const hexPublicA = this.ephemeralPublicA.toString(16).toLowerCase();
     const hexPublicB = this.ephemeralPublicB.toString(16).toLowerCase();
     const h = await sumSHA256(stringToUint8Array(hexPublicA + hexPublicB));
-    this.u = BigIntFromUint8Array(h);
+    this.u = bigIntFromUint8Array(h);
     if (this.u === bigZero) {
       throw new Error("u === 0, which is a bad thing");
     }

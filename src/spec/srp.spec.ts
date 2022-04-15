@@ -1,8 +1,6 @@
-import { uint8ArrayToHex } from '../buffer';
-import { G4096, G8192 } from 'group';
-import { KDFSHA512 } from 'kdf';
-import { ConstantTimeCompare, exp } from 'math';
-import { Mode, SRP } from 'srp';
+import { G4096 } from '../group';
+import { KDFSHA512 } from '../kdf';
+import { Mode, SRP } from '../srp';
 
 describe('secure remote password', () => {
   it('will create verifier for credentials', async () => {

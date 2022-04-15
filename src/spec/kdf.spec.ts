@@ -1,5 +1,5 @@
-import { uint8ArrayToHex } from '../buffer';
-import { KDFSHA512, stringToUint8Array, sumSHA512 } from 'kdf';
+import { KDFSHA512, sumSHA512 } from '../kdf';
+import { stringToUint8Array, uint8ArrayToHex } from '../math';
 
 describe('key derivation functions', () => {
   it('SHA512 sum will match golang #1', async () => {

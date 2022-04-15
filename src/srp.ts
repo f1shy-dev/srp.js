@@ -1,6 +1,15 @@
 import { Group } from './group';
-import { stringToUint8Array, sumSHA256 } from './kdf';
-import { BigIntFromUint8Array, ConstantTimeCompare, exp, gcd, mod, Uint8ArrayFromBigInt, XORUint8Array } from './math';
+import { sumSHA256 } from './kdf';
+import {
+  bigIntFromUint8Array,
+  constantTimeCompare,
+  exp,
+  gcd,
+  mod,
+  stringToUint8Array,
+  uint8ArrayFromBigInt,
+  xorUint8Array
+} from './math';
 
 export const MinGroupSize = 2048;
 export const MinExponentSize = 32;
@@ -248,9 +257,9 @@ export class SRP {
     }
 
     // First lets work on the H(H(A) ⊕ H(g)) part.
-    const nHash = sumSHA256(Uint8ArrayFromBigInt(this.group.n));
-    const gHash = sumSHA256(Uint8ArrayFromBigInt(this.group.g));
-    const groupXOR = XORUint8Array(await nHash, await gHash);
+    const nHash = sumSHA256(uint8ArrayFromBigInt(this.group.n));
+    const gHash = sumSHA256(uint8ArrayFromBigInt(this.group.g));
+    const groupXOR = xorUint8Array(await nHash, await gHash);
     const SHA256Size = 32;
     // Result must be 32 bytes, this is the size of SHA256, if it's anything else something is wrong.
     if (groupXOR.length !== SHA256Size) {
@@ -258,8 +267,8 @@ export class SRP {
     }
     const groupHash = sumSHA256(groupXOR);
     const usernameHash = sumSHA256(stringToUint8Array(username));
-    const A = Uint8ArrayFromBigInt(this.ephemeralPublicA);
-    const B = Uint8ArrayFromBigInt(this.ephemeralPublicB);
+    const A = uint8ArrayFromBigInt(this.ephemeralPublicA);
+    const B = uint8ArrayFromBigInt(this.ephemeralPublicB);
     // Build a new byte array allocated to the size we will need.
     let input = new Uint8Array((SHA256Size * 2) + salt.length + A.length + B.length + this.key.length);
     input.set(await groupHash, 0);
@@ -284,7 +293,7 @@ export class SRP {
     if (this.ephemeralPublicA === null || this.m === null || this.key === null) {
       throw new Error('not enough pieces in place to construct client proof');
     }
-    const A = Uint8ArrayFromBigInt(this.ephemeralPublicA);
+    const A = uint8ArrayFromBigInt(this.ephemeralPublicA);
     const input = new Uint8Array(A.length + this.m.length + this.key.length);
     input.set(A, 0);
     input.set(this.m, A.length);
@@ -296,7 +305,7 @@ export class SRP {
 
   public async GoodServerProof(salt: Uint8Array, username: string, proof: Uint8Array): Promise<boolean> {
     const myM = await this.M(salt, username);
-    this.isServerProved = ConstantTimeCompare(myM, proof);
+    this.isServerProved = constantTimeCompare(myM, proof);
     return this.isServerProved;
   }
 
@@ -308,7 +317,7 @@ export class SRP {
       return false;
     }
 
-    return ConstantTimeCompare(myClientProof, proof);
+    return constantTimeCompare(myClientProof, proof);
   }
 
   // makeLittleK initializes multiplier based on group parameters
@@ -319,13 +328,13 @@ export class SRP {
       throw new Error('group not set')
     }
 
-    const n = Uint8ArrayFromBigInt(this.group.n);
-    const g = Uint8ArrayFromBigInt(this.group.g);
+    const n = uint8ArrayFromBigInt(this.group.n);
+    const g = uint8ArrayFromBigInt(this.group.g);
     const total = new Uint8Array(n.length + g.length);
     total.set(n, 0);
     total.set(g, n.length);
 
-    this.k = BigIntFromUint8Array(await sumSHA256(total));
+    this.k = bigIntFromUint8Array(await sumSHA256(total));
 
     return this.k
   }
@@ -342,7 +351,7 @@ export class SRP {
     const eSize = Math.max(this.group.ExponentSize, MinExponentSize);
     let bytes = new Uint8Array(eSize);
     bytes = crypto.getRandomValues(bytes);
-    this.ephemeralPrivate = BigIntFromUint8Array(bytes);
+    this.ephemeralPrivate = bigIntFromUint8Array(bytes);
     return this.ephemeralPrivate;
   }
 
@@ -435,7 +444,7 @@ export class SRP {
     const hexPublicA = this.ephemeralPublicA.toString(16).toLowerCase();
     const hexPublicB = this.ephemeralPublicB.toString(16).toLowerCase();
     const h = await sumSHA256(stringToUint8Array(hexPublicA + hexPublicB));
-    this.u = BigIntFromUint8Array(h);
+    this.u = bigIntFromUint8Array(h);
     if (this.u === bigZero) {
       throw new Error('u === 0, which is a bad thing');
     }

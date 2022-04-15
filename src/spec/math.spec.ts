@@ -1,4 +1,4 @@
-import { ConstantTimeCompare, exp } from 'math';
+import { constantTimeCompare, exp } from '../math';
 
 describe('exp', () => {
   it('will calculate the modular exponentiation', () => {
@@ -16,12 +16,12 @@ describe('constant time compare', () => {
   it('will compare two byte arrays for equality', () => {
     const a = new Uint8Array([1, 2, 3, 4, 5]);
     const b = new Uint8Array([1, 2, 3, 4, 5]);
-    expect(ConstantTimeCompare(a, b)).toBeTruthy();
+    expect(constantTimeCompare(a, b)).toBeTruthy();
   });
 
   it('will compare two byte arrays for inequality', () => {
     const a = new Uint8Array([1, 2, 3, 4, 5]);
     const b = new Uint8Array([1, 2, 3, 4, 6]);
-    expect(ConstantTimeCompare(a, b)).toBeFalsy();
+    expect(constantTimeCompare(a, b)).toBeFalsy();
   })
 });
