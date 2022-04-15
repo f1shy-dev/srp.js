@@ -46,6 +46,8 @@ declare class SRP {
     private calculateU;
 }
 
+declare function KDFSHA512(salt: Uint8Array, username: string, password: string): Promise<bigint>;
+
 declare const _default: {
     SRP: typeof SRP;
     Group: typeof Group;
@@ -54,6 +56,7 @@ declare const _default: {
     G4096: Group;
     G6144: Group;
     G8192: Group;
+    KDFSHA512: typeof KDFSHA512;
 };
 
 export { _default as default };
