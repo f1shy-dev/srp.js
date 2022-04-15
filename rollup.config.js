@@ -18,6 +18,7 @@ export default [
         file: `${ name }.js`,
         format: 'cjs',
         sourcemap: true,
+        exports: 'auto',
       },
       {
         file: `${ name }.mjs`,
