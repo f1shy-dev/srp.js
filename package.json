@@ -1,6 +1,6 @@
 {
   "name": "@elliotcourant/srp.js",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Secure Remote Password for the web.",
   "main": "dist/srp.js",
   "module": "dist/srp.mjs",
@@ -13,13 +13,6 @@
   "license": "MPL-2.0",
   "private": false,
   "source": "src/index.ts",
-  "exports": {
-    "package.json": "package.json",
-    ".": {
-      "import": "dist/srp.mjs",
-      "require": "dist/srp.js"
-    }
-  },
   "engines": {
     "node": ">=16.13.0"
   },
