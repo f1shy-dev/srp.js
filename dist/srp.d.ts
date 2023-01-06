@@ -47,6 +47,7 @@ declare class SRP {
 }
 
 declare function KDFSHA512(salt: Uint8Array, username: string, password: string): Promise<bigint>;
+declare function KDFSHA256(salt: Uint8Array, username: string, password: string, usernameInX?: boolean): Promise<bigint>;
 
 declare const _default: {
     SRP: typeof SRP;
@@ -58,6 +59,7 @@ declare const _default: {
     G8192: Group;
     KDFSHA512: typeof KDFSHA512;
     Mode: typeof Mode;
+    KDFSHA256: typeof KDFSHA256;
 };
 
 export { _default as default };

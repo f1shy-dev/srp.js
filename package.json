@@ -1,5 +1,5 @@
 {
-  "name": "@elliotcourant/srp.js",
+  "name": "@f1shy-dev/srp.js",
   "version": "0.0.5",
   "description": "Secure Remote Password for the web.",
   "main": "dist/srp.js",
