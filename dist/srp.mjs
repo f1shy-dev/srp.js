@@ -158,6 +158,18 @@ class SRP {
     }
     return;
   }
+  async setXorV(mode, xORv) {
+    this.mode = mode;
+    switch (mode) {
+      case 0 /* Client */:
+        this.x = xORv;
+        break;
+      case 1 /* Server */:
+        this.v = xORv;
+        break;
+    }
+    return;
+  }
   Verifier() {
     if (this.mode === 1 /* Server */) {
       throw new Error("server may not produce a verifier");

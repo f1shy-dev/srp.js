@@ -1,6 +1,6 @@
 {
   "name": "@f1shy-dev/srp.js",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Secure Remote Password for the web.",
   "main": "dist/srp.js",
   "module": "dist/srp.mjs",

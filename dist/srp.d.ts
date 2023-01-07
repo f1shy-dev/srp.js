@@ -28,6 +28,7 @@ declare class SRP {
     private badState;
     constructor(group: Group);
     Setup(mode: Mode, xORv: bigint, k?: bigint | null): Promise<void>;
+    setXorV(mode: Mode, xORv: bigint): Promise<void>;
     Verifier(): bigint;
     EphemeralPublic(): Promise<bigint>;
     SetOthersPublic(AorB: bigint): void;
