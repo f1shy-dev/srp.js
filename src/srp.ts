@@ -1,5 +1,5 @@
-import { Group } from './group';
-import { sumSHA256 } from './kdf';
+import { Group } from "./group";
+import { sumSHA256 } from "./kdf";
 import {
   bigIntFromUint8Array,
   constantTimeCompare,
@@ -8,8 +8,8 @@ import {
   mod,
   stringToUint8Array,
   uint8ArrayFromBigInt,
-  xorUint8Array
-} from './math';
+  xorUint8Array,
+} from "./math";
 
 export const MinGroupSize = 2048;
 export const MinExponentSize = 32;
@@ -18,7 +18,7 @@ export const bigOne = BigInt(1);
 
 export enum Mode {
   Client,
-  Server
+  Server,
 }
 
 export class SRP {
@@ -48,14 +48,18 @@ export class SRP {
     this.v = bigZero;
     this.preMasterKey = bigZero;
     this.key = null;
-    this.group = group
+    this.group = group;
 
     this.m = null;
     this.cProof = null;
   }
 
   // setup should be called after the constructor.
-  public async Setup(mode: Mode, xORv: bigint, k?: bigint | null): Promise<void> {
+  public async Setup(
+    mode: Mode,
+    xORv: bigint,
+    k?: bigint | null
+  ): Promise<void> {
     this.mode = mode;
     switch (mode) {
       case Mode.Client:
@@ -86,9 +90,23 @@ export class SRP {
     return;
   }
 
+  public async setXorV(mode: Mode, xORv: bigint): Promise<void> {
+    this.mode = mode;
+    switch (mode) {
+      case Mode.Client:
+        this.x = xORv;
+        break;
+      case Mode.Server:
+        this.v = xORv;
+        break;
+    }
+
+    return;
+  }
+
   public Verifier(): bigint {
     if (this.mode === Mode.Server) {
-      throw new Error('server may not produce a verifier')
+      throw new Error("server may not produce a verifier");
     }
 
     return this.makeVerifier();
@@ -97,7 +115,7 @@ export class SRP {
   public async EphemeralPublic(): Promise<bigint> {
     if (this.mode === Mode.Server) {
       if (this.ephemeralPublicB === bigZero) {
-        await this.makeB()
+        await this.makeB();
       }
       return this.ephemeralPublicB;
     }
@@ -121,7 +139,7 @@ export class SRP {
     if (!this.IsPublicValid(AorB)) {
       this.badState = true;
       this.key = null;
-      throw new Error('invalid public exponent')
+      throw new Error("invalid public exponent");
     }
 
     if (this.mode === Mode.Server) {
@@ -143,20 +161,20 @@ export class SRP {
     // 2. If public paramater zero or a multiple of M
     // 3. If public parameter is not relatively prime to N (a bad group?)
     if (!this.group) {
-      return false
+      return false;
     }
     if (this.group.g === bigZero) {
-      return false
+      return false;
     }
 
     let result = mod(AorB, this.group.n);
     if (result === bigZero) {
       // If the result is not negative or positive then return false.
-      return false
+      return false;
     }
 
     // Return whether or not the greatest common denominator of AorB and n is one.
-    return gcd(AorB, this.group.n) === bigOne
+    return gcd(AorB, this.group.n) === bigOne;
   }
 
   // Key creates and returns the session Key.
@@ -181,13 +199,13 @@ export class SRP {
       return this.key;
     }
     if (this.badState) {
-      throw new Error('we\'ve got bad data');
+      throw new Error("we've got bad data");
     }
     if (!this.group) {
-      throw new Error('group not set')
+      throw new Error("group not set");
     }
     if (this.group.n === bigZero) {
-      throw new Error('group has 0 modulus')
+      throw new Error("group has 0 modulus");
     }
 
     // Because of tests, we don't want to always recalculate u
@@ -199,11 +217,11 @@ export class SRP {
     // We must refuse to calculate Key when u === 0;
     if (!this.isUValid()) {
       this.badState = true;
-      throw new Error('invalid u');
+      throw new Error("invalid u");
     }
 
     if (this.ephemeralPrivate === bigZero) {
-      throw new Error('cannot make Key with my ephemeral secret');
+      throw new Error("cannot make Key with my ephemeral secret");
     }
 
     let b: bigint;
@@ -211,15 +229,19 @@ export class SRP {
     if (this.mode === Mode.Server) {
       // S = (Av^u) ^ b
       if (this.v === null || this.ephemeralPublicA === null) {
-        throw new Error('not enough is known to create Key')
+        throw new Error("not enough is known to create Key");
       }
       b = exp(this.v, this.u, this.group.n);
       b = b * this.ephemeralPublicA;
       e = this.ephemeralPrivate;
     } else {
       // (B - kg^x) ^ (a + ux)
-      if (this.ephemeralPublicB === null || this.k === null || this.x === null) {
-        throw new Error('not enough is known to create Key');
+      if (
+        this.ephemeralPublicB === null ||
+        this.k === null ||
+        this.x === null
+      ) {
+        throw new Error("not enough is known to create Key");
       }
       e = this.u * this.x;
       e = e + this.ephemeralPrivate;
@@ -231,7 +253,9 @@ export class SRP {
     }
 
     this.preMasterKey = exp(b, e, this.group.n);
-    this.key = await sumSHA256(stringToUint8Array(this.preMasterKey.toString(16)));
+    this.key = await sumSHA256(
+      stringToUint8Array(this.preMasterKey.toString(16))
+    );
     // TODO, OP does an assertion here to make sure the key length is the same as the expected hash length. But there
     //  seems to be no equivalent in JS?
     return this.key;
@@ -250,10 +274,10 @@ export class SRP {
   // M returns the server's proof of knowledge of key.
   public async M(salt: Uint8Array, username: string): Promise<Uint8Array> {
     if (this.m !== null || this.m?.length > 0) {
-      return this.m
+      return this.m;
     }
     if (this.key === null) {
-      throw new Error('don\'t try to prove anything before you have the key');
+      throw new Error("don't try to prove anything before you have the key");
     }
 
     // First lets work on the H(H(A) ⊕ H(g)) part.
@@ -263,20 +287,22 @@ export class SRP {
     const SHA256Size = 32;
     // Result must be 32 bytes, this is the size of SHA256, if it's anything else something is wrong.
     if (groupXOR.length !== SHA256Size) {
-      throw new Error(`XOR had ${ groupXOR.length } bytes instead of 32`);
+      throw new Error(`XOR had ${groupXOR.length} bytes instead of 32`);
     }
     const groupHash = sumSHA256(groupXOR);
     const usernameHash = sumSHA256(stringToUint8Array(username));
     const A = uint8ArrayFromBigInt(this.ephemeralPublicA);
     const B = uint8ArrayFromBigInt(this.ephemeralPublicB);
     // Build a new byte array allocated to the size we will need.
-    let input = new Uint8Array((SHA256Size * 2) + salt.length + A.length + B.length + this.key.length);
+    let input = new Uint8Array(
+      SHA256Size * 2 + salt.length + A.length + B.length + this.key.length
+    );
     input.set(await groupHash, 0);
     input.set(await usernameHash, SHA256Size);
     input.set(salt, SHA256Size * 2);
-    input.set(A, (SHA256Size * 2) + salt.length);
-    input.set(B, (SHA256Size * 2) + salt.length + A.length);
-    input.set(this.key, (SHA256Size * 2) + salt.length + A.length + B.length);
+    input.set(A, SHA256Size * 2 + salt.length);
+    input.set(B, SHA256Size * 2 + salt.length + A.length);
+    input.set(this.key, SHA256Size * 2 + salt.length + A.length + B.length);
 
     this.m = await sumSHA256(input);
     return this.m;
@@ -285,13 +311,17 @@ export class SRP {
   // ClientProof constructs the clients proof from which it knows the key.
   public async ClientProof(): Promise<Uint8Array> {
     if (this.mode !== Mode.Server && !this.isServerProved) {
-      throw new Error('don\'t constrict client proof until server is proved');
+      throw new Error("don't constrict client proof until server is proved");
     }
     if (this.cProof !== null) {
       return this.cProof;
     }
-    if (this.ephemeralPublicA === null || this.m === null || this.key === null) {
-      throw new Error('not enough pieces in place to construct client proof');
+    if (
+      this.ephemeralPublicA === null ||
+      this.m === null ||
+      this.key === null
+    ) {
+      throw new Error("not enough pieces in place to construct client proof");
     }
     const A = uint8ArrayFromBigInt(this.ephemeralPublicA);
     const input = new Uint8Array(A.length + this.m.length + this.key.length);
@@ -303,7 +333,11 @@ export class SRP {
     return this.cProof;
   }
 
-  public async GoodServerProof(salt: Uint8Array, username: string, proof: Uint8Array): Promise<boolean> {
+  public async GoodServerProof(
+    salt: Uint8Array,
+    username: string,
+    proof: Uint8Array
+  ): Promise<boolean> {
     const myM = await this.M(salt, username);
     this.isServerProved = constantTimeCompare(myM, proof);
     return this.isServerProved;
@@ -325,7 +359,7 @@ export class SRP {
   // BUG(jpg): Creation of multiplier, little k, does _not_ conform to RFC 5054 padding.
   private async makeLittleK(): Promise<bigint> {
     if (!this.group) {
-      throw new Error('group not set')
+      throw new Error("group not set");
     }
 
     const n = uint8ArrayFromBigInt(this.group.n);
@@ -336,7 +370,7 @@ export class SRP {
 
     this.k = bigIntFromUint8Array(await sumSHA256(total));
 
-    return this.k
+    return this.k;
   }
 
   // generateMySecret creates the little a or b
@@ -358,10 +392,10 @@ export class SRP {
   // makeA calculates A (if necessary) and returns it.
   private makeA(): bigint {
     if (!this.group) {
-      throw new Error('group not set');
+      throw new Error("group not set");
     }
     if (this.mode !== Mode.Client) {
-      throw new Error('only the client can make A');
+      throw new Error("only the client can make A");
     }
 
     if (this.ephemeralPrivate === bigZero) {
@@ -370,32 +404,36 @@ export class SRP {
       this.ephemeralPrivate = this.generateMySecret();
     }
 
-    this.ephemeralPublicA = exp(this.group.g, this.ephemeralPrivate, this.group.n);
+    this.ephemeralPublicA = exp(
+      this.group.g,
+      this.ephemeralPrivate,
+      this.group.n
+    );
     return this.ephemeralPublicA;
   }
 
   private async makeB(): Promise<bigint> {
     // Absolute Prerequisites: Group, isServer, v
     if (!this.group) {
-      throw new Error('group not set')
+      throw new Error("group not set");
     }
     if (this.mode !== Mode.Server) {
-      throw new Error('only the server can make B')
+      throw new Error("only the server can make B");
     }
     if (this.v === bigZero) {
-      throw new Error('v must be known before B can be calculated');
+      throw new Error("v must be known before B can be calculated");
     }
 
     // This test is so I'm not lying to gosec wrt to G105
     // No idea if this translates to TS at all, but might as well keep it in to make sure we are doing the same thing.
     if (this.group.n === bigZero) {
-      throw new Error('something is wrong if modulus is zero')
+      throw new Error("something is wrong if modulus is zero");
     }
 
     // Generatable prerequisites: k, b if needed
     if (this.k === bigZero) {
       // If k has not been generated
-      await this.makeLittleK()
+      await this.makeLittleK();
     }
 
     if (this.ephemeralPrivate === bigZero) {
@@ -405,21 +443,21 @@ export class SRP {
     }
 
     const term2 = exp(this.group.g, this.ephemeralPrivate, this.group.n);
-    const term1 = mod((this.k * this.v), this.group.n);
-    this.ephemeralPublicB = mod((term1 + term2), this.group.n);
+    const term1 = mod(this.k * this.v, this.group.n);
+    this.ephemeralPublicB = mod(term1 + term2, this.group.n);
 
     return this.ephemeralPublicB;
   }
 
   private makeVerifier(): bigint {
     if (!this.group) {
-      throw new Error('group not set')
+      throw new Error("group not set");
     }
     if (this.badState) {
-      throw new Error('we have bad data')
+      throw new Error("we have bad data");
     }
     if (this.x === bigZero) {
-      throw new Error('x must be known to calculate v')
+      throw new Error("x must be known to calculate v");
     }
 
     this.v = exp(this.group.g, this.x, this.group.n);
@@ -429,16 +467,19 @@ export class SRP {
   private isUValid(): boolean {
     if (this.u === null || this.badState) {
       this.u = null;
-      return false
+      return false;
     }
 
-    return this.u !== bigZero
+    return this.u !== bigZero;
   }
 
   private async calculateU(): Promise<bigint> {
-    if (!this.IsPublicValid(this.ephemeralPublicA) || !this.IsPublicValid(this.ephemeralPublicB)) {
+    if (
+      !this.IsPublicValid(this.ephemeralPublicA) ||
+      !this.IsPublicValid(this.ephemeralPublicB)
+    ) {
       this.u = null;
-      throw new Error('both A and B must be known to calculate u');
+      throw new Error("both A and B must be known to calculate u");
     }
 
     const hexPublicA = this.ephemeralPublicA.toString(16).toLowerCase();
@@ -446,7 +487,7 @@ export class SRP {
     const h = await sumSHA256(stringToUint8Array(hexPublicA + hexPublicB));
     this.u = bigIntFromUint8Array(h);
     if (this.u === bigZero) {
-      throw new Error('u === 0, which is a bad thing');
+      throw new Error("u === 0, which is a bad thing");
     }
 
     return this.u;
